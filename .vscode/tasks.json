@@ -3,12 +3,12 @@
         {
             "type": "cppbuild",
             "label": "C/C++: gcc build active file",
-            "command": "gcc.exe",
+            "command": "/bin/gcc",
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
-                "${fileDirname}\\**.c",
-                "${fileDirname}\\**.h",
+                "${fileDirname}//**.c",
+                "${fileDirname}//**.h",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}"
             ],

@@ -16,13 +16,14 @@ void CPU_Start()
 
 void CPU_FDE()
 {
-	processor.instructionWidth = 1;
+	processor.instructionWidth = 0;
 	//Set memory addressing mode of opcode
 	processor.targetFunction = addressingTable[memory[processor.PC]];
-	if(processor.targetFunction != NULL)
-		(processor.targetFunction)();
 	//Set instruction to be used by opcode
 	processor.targetFunction = instructionTable[memory[processor.PC]];
+	processor.PC += 1;
+	if(processor.targetFunction != NULL)
+		(processor.targetFunction)();
 	if (processor.targetFunction != NULL)
 		(processor.targetFunction)();
 	Debug();
@@ -264,14 +265,14 @@ void NOP()
 
 void Immediate()
 {
-	processor.instructionWidth = 2;
+	processor.instructionWidth = 1;
 	processor.targetData = &memory[processor.PC + 1];
 	processor.address = 0;
 }
 
 void Absolute()
 {
-	processor.instructionWidth = 3;
+	processor.instructionWidth = 2;
 	processor.address = memory[processor.PC + 2];
 	processor.address = processor.address << 8;
 	processor.address += memory[processor.PC + 1];
@@ -287,7 +288,7 @@ void ZeroPage()
 
 void Indirect()
 {
-	processor.instructionWidth = 3;
+	processor.instructionWidth = 2;
 	uint16_t tempAddress = memory[processor.PC + 2];
 	tempAddress = tempAddress << 8;
 	tempAddress += memory[processor.PC + 1];
@@ -300,13 +301,25 @@ void Indirect()
 
 void Relative()
 {
+	processor.instructionWidth = 1;
 	processor.address = 0;
 	processor.targetData = &memory[processor.PC + 1];
 }
 
 void Accumulator()
 {
+	processor.instructionWidth = 0;
 	processor.address = 0;
 	processor.targetData = &processor.A;
+}
+
+void AbsoluteX()
+{
+
+}
+
+void AbsoluteY()
+{
+
 }
 CPU processor;

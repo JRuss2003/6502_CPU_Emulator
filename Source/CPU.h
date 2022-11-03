@@ -158,7 +158,10 @@ void ZeroPage();
 void Indirect();
 //operation data is byte proceeding opcode
 void Relative();
-
+//operation data is 2byte address added with the X register
+void AbsoluteX();
+//operation data is 2byte address added with the Y register
+void AbsoluteY();
 //operation is performed on the accumulator
 void Accumulator();
 extern CPU processor;
