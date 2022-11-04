@@ -18,21 +18,20 @@ void CPU_FDE()
 {
 	processor.instructionWidth = 0;
 	//Set memory addressing mode of opcode
-	processor.targetFunction = addressingTable[memory[processor.PC]];
+	processor.addressMode = addressingTable[memory[processor.PC]];
 	//Set instruction to be used by opcode
-	processor.targetFunction = instructionTable[memory[processor.PC]];
+	processor.opcode = instructionTable[memory[processor.PC]];
 	processor.PC += 1;
-	if(processor.targetFunction != NULL)
-		(processor.targetFunction)();
-	if (processor.targetFunction != NULL)
-		(processor.targetFunction)();
+	if(processor.addressMode != NULL)
+		(processor.addressMode)();
+	if (processor.opcode != NULL)
+		(processor.opcode)();
 	Debug();
-	processor.PC += processor.instructionWidth;
 }
 
 void Debug()
 {
-	printf("A: 0x%02X, X: 0x%02X, Y: 0x%02X, SP: 0x%02X, PC: 0x%04X | Opcode: 0x%02X, Data: 0x%02X, Address: 0x%04X\n", processor.A, processor.X, processor.Y, processor.SP, processor.PC, memory[processor.PC], *processor.targetData, processor.address);
+	printf("A: 0x%02X, X: 0x%02X, Y: 0x%02X, SP: 0x%02X, PC: 0x%04X | Opcode: 0x%02X, Data: 0x%02X, Address: 0x%04X\n", processor.A, processor.X, processor.Y, processor.SP, processor.PC - processor.instructionWidth - 1, memory[processor.PC], *processor.targetData, processor.address);
 }
 
 void LDA()
@@ -266,44 +265,49 @@ void NOP()
 void Immediate()
 {
 	processor.instructionWidth = 1;
-	processor.targetData = &memory[processor.PC + 1];
+	processor.targetData = &memory[processor.PC];
 	processor.address = 0;
+	processor.PC += 1;
 }
 
 void Absolute()
 {
 	processor.instructionWidth = 2;
-	processor.address = memory[processor.PC + 2];
+	processor.address = memory[processor.PC + 1];
 	processor.address = processor.address << 8;
-	processor.address += memory[processor.PC + 1];
+	processor.address += memory[processor.PC];
 	processor.targetData = &memory[processor.address];
+	processor.PC += 2;
 }
 
 void ZeroPage()
 {
-	processor.instructionWidth = 2;
-	processor.address = memory[processor.PC + 1];
+	processor.instructionWidth = 1;
+	processor.address = memory[processor.PC];
 	processor.targetData = &memory[processor.address];
+	processor.PC += 1;
 }
 
 void Indirect()
 {
 	processor.instructionWidth = 2;
-	uint16_t tempAddress = memory[processor.PC + 2];
+	uint16_t tempAddress = memory[processor.PC + 1];
 	tempAddress = tempAddress << 8;
-	tempAddress += memory[processor.PC + 1];
+	tempAddress += memory[processor.PC];
 
 	processor.address = memory[tempAddress + 1];
 	processor.address << 8;
 	processor.address += memory[tempAddress];
 	processor.targetData = 0;
+	processor.PC += 2;
 }
 
 void Relative()
 {
 	processor.instructionWidth = 1;
 	processor.address = 0;
-	processor.targetData = &memory[processor.PC + 1];
+	processor.targetData = &memory[processor.PC];
+	processor.PC += 1;
 }
 
 void Accumulator()
@@ -315,11 +319,21 @@ void Accumulator()
 
 void AbsoluteX()
 {
-
+	processor.instructionWidth = 2;
+	processor.address = memory[processor.PC + 1];
+	processor.address = processor.address << 8;
+	processor.address += memory[processor.PC];
+	processor.address += processor.X;
+	processor.PC += 2;
 }
 
 void AbsoluteY()
 {
-
+	processor.instructionWidth = 2;
+	processor.address = memory[processor.PC + 1];
+	processor.address = processor.address << 8;
+	processor.address += memory[processor.PC];
+	processor.address += processor.Y;
+	processor.PC += 2;
 }
 CPU processor;

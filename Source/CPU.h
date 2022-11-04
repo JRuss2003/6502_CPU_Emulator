@@ -12,7 +12,8 @@ typedef struct {
 	uint16_t address;
 	uint8_t* targetData;
 	uint8_t instructionWidth;
-	void (*targetFunction)();
+	void (*opcode)();
+	void (*addressMode)();
 } CPU;
 
 void CPU_Start();

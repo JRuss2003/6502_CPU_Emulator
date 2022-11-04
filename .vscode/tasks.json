@@ -3,14 +3,14 @@
         {
             "type": "cppbuild",
             "label": "C/C++: gcc build active file",
-            "command": "/bin/gcc",
+            "command": "gcc.exe",
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
-                "${fileDirname}//**.c",
-                "${fileDirname}//**.h",
+                "${fileDirname}\\**.c",
+                "${fileDirname}\\**.h",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}"
+                "${fileDirname}\\6502.exe"
             ],
             "options": {
                 "cwd": "${fileDirname}"
@@ -19,7 +19,7 @@
                 "$gcc"
             ],
             "group": "build",
-            "detail": "compiler: /bin/gcc"
+            "detail": "compiler: gcc.exe"
         }
     ],
     "version": "2.0.0"
