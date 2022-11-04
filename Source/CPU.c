@@ -16,6 +16,7 @@ void CPU_Start()
 
 void CPU_FDE()
 {
+	printf("PC: 0x%04X, ",processor.PC);
 	processor.instructionWidth = 0;
 	//Set memory addressing mode of opcode
 	processor.addressMode = addressingTable[memory[processor.PC]];
@@ -31,7 +32,7 @@ void CPU_FDE()
 
 void Debug()
 {
-	printf("A: 0x%02X, X: 0x%02X, Y: 0x%02X, SP: 0x%02X, PC: 0x%04X | Opcode: 0x%02X, Data: 0x%02X, Address: 0x%04X\n", processor.A, processor.X, processor.Y, processor.SP, processor.PC - processor.instructionWidth - 1, memory[processor.PC], *processor.targetData, processor.address);
+	printf("A: 0x%02X, X: 0x%02X, Y: 0x%02X, SP: 0x%02X | Opcode: 0x%02X, Data: 0x%02X, Address: 0x%04X\n", processor.A, processor.X, processor.Y, processor.SP, memory[processor.PC], *processor.targetData, processor.address);
 }
 
 void LDA()
@@ -335,5 +336,40 @@ void AbsoluteY()
 	processor.address += memory[processor.PC];
 	processor.address += processor.Y;
 	processor.PC += 2;
+}
+
+void IndirectX()
+{
+	processor.instructionWidth = 2;
+	uint16_t tempAddress = memory[processor.PC + 1];
+	tempAddress = tempAddress << 8;
+	tempAddress += memory[processor.PC];
+	tempAddress += processor.X;
+
+	processor.address = memory[tempAddress + 1];
+	processor.address << 8;
+	processor.address += memory[tempAddress];
+	processor.targetData = 0;
+	processor.PC += 2;
+}
+
+void IndirectY()
+{
+	processor.instructionWidth = 2;
+	uint16_t tempAddress = memory[processor.PC + 1];
+	tempAddress = tempAddress << 8;
+	tempAddress += memory[processor.PC];
+
+	processor.address = memory[tempAddress + 1];
+	processor.address << 8;
+	processor.address += memory[tempAddress];
+	processor.address += processor.Y;
+	processor.targetData = 0;
+	processor.PC += 2;
+}
+
+void Implied()
+{
+	//No operation, empty function.
 }
 CPU processor;

@@ -165,6 +165,10 @@ void AbsoluteX();
 void AbsoluteY();
 //operation is performed on the accumulator
 void Accumulator();
+//Not sure how to explain these in a comment, just look them up
+void IndirectX();
+void IndirectY();
+void Implied();
 extern CPU processor;
 
 #endif

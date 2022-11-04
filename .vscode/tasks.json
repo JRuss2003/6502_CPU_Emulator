@@ -10,7 +10,7 @@
                 "${fileDirname}\\**.c",
                 "${fileDirname}\\**.h",
                 "-o",
-                "${fileDirname}\\6502.exe"
+                "6502.exe"
             ],
             "options": {
                 "cwd": "${fileDirname}"
