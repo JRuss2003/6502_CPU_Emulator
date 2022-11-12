@@ -149,26 +149,28 @@ void NOP();
 
 //addressing modes
 extern void (*addressingTable[256])();
-//operation data is the immediate byte proceeding the opcode
 void Immediate();
-//operation data is at the absolute address proceeding the opcode
 void Absolute();
-//operation data is at the zero-page address proceeding the opcode
 void ZeroPage();
-//operation data is a 2 byte address located at the address proceeding the opcode.
 void Indirect();
-//operation data is byte proceeding opcode
 void Relative();
-//operation data is 2byte address added with the X register
 void AbsoluteX();
-//operation data is 2byte address added with the Y register
 void AbsoluteY();
-//operation is performed on the accumulator
 void Accumulator();
-//Not sure how to explain these in a comment, just look them up
 void IndirectX();
 void IndirectY();
 void Implied();
+
+//Set bits of status register to 1 or 0
+void SetBit7(int bit);
+void SetBit6(int bit);
+void SetBit5(int bit);
+void SetBit4(int bit);
+void SetBit3(int bit);
+void SetBit2(int bit);
+void SetBit1(int bit);
+void SetBit0(int bit);
+
 extern CPU processor;
 
 #endif

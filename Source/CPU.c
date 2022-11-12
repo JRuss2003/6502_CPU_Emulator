@@ -1,3 +1,4 @@
+
 #include "CPU.h"
 #include "Memory.h"
 
@@ -263,16 +264,14 @@ void NOP()
 {
 }
 
-void Immediate()
-{
+void Immediate(){
 	processor.instructionWidth = 1;
 	processor.targetData = &memory[processor.PC];
 	processor.address = 0;
 	processor.PC += 1;
 }
 
-void Absolute()
-{
+void Absolute(){
 	processor.instructionWidth = 2;
 	processor.address = memory[processor.PC + 1];
 	processor.address = processor.address << 8;
@@ -281,16 +280,14 @@ void Absolute()
 	processor.PC += 2;
 }
 
-void ZeroPage()
-{
+void ZeroPage(){
 	processor.instructionWidth = 1;
 	processor.address = memory[processor.PC];
 	processor.targetData = &memory[processor.address];
 	processor.PC += 1;
 }
 
-void Indirect()
-{
+void Indirect(){
 	processor.instructionWidth = 2;
 	uint16_t tempAddress = memory[processor.PC + 1];
 	tempAddress = tempAddress << 8;
@@ -303,23 +300,20 @@ void Indirect()
 	processor.PC += 2;
 }
 
-void Relative()
-{
+void Relative(){
 	processor.instructionWidth = 1;
 	processor.address = 0;
 	processor.targetData = &memory[processor.PC];
 	processor.PC += 1;
 }
 
-void Accumulator()
-{
+void Accumulator(){
 	processor.instructionWidth = 0;
 	processor.address = 0;
 	processor.targetData = &processor.A;
 }
 
-void AbsoluteX()
-{
+void AbsoluteX(){
 	processor.instructionWidth = 2;
 	processor.address = memory[processor.PC + 1];
 	processor.address = processor.address << 8;
@@ -328,8 +322,7 @@ void AbsoluteX()
 	processor.PC += 2;
 }
 
-void AbsoluteY()
-{
+void AbsoluteY(){
 	processor.instructionWidth = 2;
 	processor.address = memory[processor.PC + 1];
 	processor.address = processor.address << 8;
@@ -338,8 +331,7 @@ void AbsoluteY()
 	processor.PC += 2;
 }
 
-void IndirectX()
-{
+void IndirectX(){
 	processor.instructionWidth = 2;
 	uint16_t tempAddress = memory[processor.PC + 1];
 	tempAddress = tempAddress << 8;
@@ -353,8 +345,7 @@ void IndirectX()
 	processor.PC += 2;
 }
 
-void IndirectY()
-{
+void IndirectY(){
 	processor.instructionWidth = 2;
 	uint16_t tempAddress = memory[processor.PC + 1];
 	tempAddress = tempAddress << 8;
@@ -368,8 +359,80 @@ void IndirectY()
 	processor.PC += 2;
 }
 
-void Implied()
-{
+void Implied(){
 	//No operation, empty function.
 }
+
+void SetBit7(int bit){
+	if(bit == 1){
+		processor.Flag = processor.Flag | 0x80;
+	}
+	else{
+		processor.Flag = processor.Flag & 0x7F;
+	}
+}
+
+void SetBit6(int bit){
+	if(bit == 1){
+		processor.Flag = processor.Flag | 0x40;
+	}
+	else{
+		processor.Flag = processor.Flag & 0xBF;
+	}
+}
+
+void SetBit5(int bit){
+	if(bit == 1){
+		processor.Flag = processor.Flag | 0x20;
+	}
+	else{
+		processor.Flag = processor.Flag & 0xDF;
+	}
+}
+
+void SetBit4(int bit){
+	if(bit == 1){
+		processor.Flag = processor.Flag | 0x10;
+	}
+	else{
+		processor.Flag = processor.Flag & 0xEF;
+	}
+}
+
+void SetBit3(int bit){
+	if(bit == 1){
+		processor.Flag = processor.Flag | 0x08;
+	}
+	else{
+		processor.Flag = processor.Flag & 0xF7;
+	}
+}
+
+void SetBit2(int bit){
+	if(bit == 1){
+		processor.Flag = processor.Flag | 0x04;
+	}
+	else{
+		processor.Flag = processor.Flag & 0xFB;
+	}
+}
+
+void SetBit1(int bit){
+	if(bit == 1){
+		processor.Flag = processor.Flag | 0x02;
+	}
+	else{
+		processor.Flag = processor.Flag & 0xFD;
+	}
+}
+
+void SetBit0(int bit){
+	if(bit == 1){
+		processor.Flag = processor.Flag | 0x01;
+	}
+	else{
+		processor.Flag = processor.Flag & 0xFE;
+	}
+}
+
 CPU processor;
