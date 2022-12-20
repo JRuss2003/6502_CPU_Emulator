@@ -1,6 +1,7 @@
 
 #include "CPU.h"
 #include "Memory.h"
+#include "Device.h"
 
 void (*instructionTable[256])();
 void (*addressingTable[256])();
@@ -346,11 +347,12 @@ void CPU_Start()
 	//Init registers
 	processor.PC = 0x200;
 	processor.Flag = 0x00;
+	deviceState = 1;
 }
 
 void CPU_FDE()
 {
-	printf("PC: 0x%04X, ",processor.PC);
+	printf("PC: 0x%04X, Opcode: 0x%02X, ",processor.PC, memory[processor.PC]);
 	processor.instructionWidth = 0;
 	//Set memory addressing mode of opcode
 	processor.addressMode = addressingTable[memory[processor.PC]];
@@ -361,12 +363,7 @@ void CPU_FDE()
 		(processor.addressMode)();
 	if (processor.opcode != NULL)
 		(processor.opcode)();
-	Debug();
-}
-
-void Debug()
-{
-	printf("A: 0x%02X, X: 0x%02X, Y: 0x%02X, SP: 0x%02X | Opcode: 0x%02X, Data: 0x%02X, Address: 0x%04X\n", processor.A, processor.X, processor.Y, processor.SP, memory[processor.PC], *processor.targetData, processor.address);
+	printf("Data: 0x%02X, Address: 0x%04X | A: 0x%02X, X: 0x%02X, Y: 0x%02X, SP: 0x%02X\n",  *processor.targetData, processor.address, processor.A, processor.X, processor.Y, processor.SP);
 }
 
 void LDA()
@@ -583,6 +580,7 @@ void RTS()
 
 void BRK()
 {
+	
 }
 
 void RTI()
@@ -694,6 +692,20 @@ void IndirectY(){
 
 void Implied(){
 	//No operation, empty function.
+}
+
+void ZeroPageX(){
+	processor.instructionWidth = 1;
+	processor.address = memory[processor.PC];
+	processor.address += processor.X;
+	processor.PC += 1;
+}
+
+void ZeroPageY(){
+	processor.instructionWidth = 1;
+	processor.address = memory[processor.PC];
+	processor.address += processor.Y;
+	processor.PC += 1;
 }
 
 void SetBit7(int bit){

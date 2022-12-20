@@ -5,7 +5,7 @@
 int deviceState;
 
 void EmulationLoop() {
-	while (processor.PC < MAX_MEMORY) {
+	while (processor.PC < MAX_MEMORY && deviceState == 1) {
 		CPU_FDE();
 		
 	}

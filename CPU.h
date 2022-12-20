@@ -18,7 +18,6 @@ typedef struct {
 
 void CPU_Start();
 void CPU_FDE();
-void Debug();
 
 //instructions
 extern void (*instructionTable[256])();
@@ -160,6 +159,8 @@ void Accumulator();
 void IndirectX();
 void IndirectY();
 void Implied();
+void ZeroPageX();
+void ZeroPageY();
 
 //Set bits of status register to 1 or 0
 void SetBit7(int bit);

@@ -1,13 +1,14 @@
 CC = gcc
 CFLAGS = -g
-SDIR=Source
-BDIR=Bin
 
-DEPS = $(SDIR)/Device.h $(SDIR)/CPU.h $(SDIR)/Memory.h
-OBJ = $(SDIR)/Main.o $(SDIR)/CPU.o $(SDIR)/Device.o $(SDIR)/Memory.o
+DEPS = Device.h CPU.h Memory.h
+OBJ = Main.o CPU.o Device.o Memory.o
 
 %.o: %.c $(DEPS)
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) -c -o $@ $< $(CFLAGS)
       
-$(BDIR)/hellomake1: $(OBJ)
+hellomake1: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
+
+clean:
+	rm -f *.o
