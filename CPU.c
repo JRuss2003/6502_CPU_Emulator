@@ -3,6 +3,17 @@
 #include "Memory.h"
 #include "Device.h"
 
+#define BIT_STRING "%c%c%c%c%c%c%c%c"
+#define BYTE_TO_BITS(byte)  \
+  (byte & 0x80 ? '1' : '0'), \
+  (byte & 0x40 ? '1' : '0'), \
+  (byte & 0x20 ? '1' : '0'), \
+  (byte & 0x10 ? '1' : '0'), \
+  (byte & 0x08 ? '1' : '0'), \
+  (byte & 0x04 ? '1' : '0'), \
+  (byte & 0x02 ? '1' : '0'), \
+  (byte & 0x01 ? '1' : '0') 
+
 void (*instructionTable[256])();
 void (*addressingTable[256])();
 
@@ -189,8 +200,8 @@ void CPU_Start()
 
 	addressingTable[0x10] = &Relative;
 	addressingTable[0x11] = &IndirectY;
-	//addressingTable[0x15] = &;
-	//addressingTable[0x16] = &ASL;
+	addressingTable[0x15] = &ZeroPageX;
+	addressingTable[0x16] = &ZeroPageX;
 	addressingTable[0x18] = &Implied;
 	addressingTable[0x19] = &AbsoluteY;
 	addressingTable[0x1D] = &AbsoluteX;
@@ -210,8 +221,8 @@ void CPU_Start()
 
 	addressingTable[0x30] = &Relative;
 	addressingTable[0x31] = &IndirectY;
-	//addressingTable[0x35] = &AND;
-	//addressingTable[0x36] = &ROL;
+	addressingTable[0x35] = &ZeroPageX;
+	addressingTable[0x36] = &ZeroPageX;
 	addressingTable[0x38] = &Implied;
 	addressingTable[0x39] = &AbsoluteY;
 	addressingTable[0x3D] = &AbsoluteX;
@@ -230,8 +241,8 @@ void CPU_Start()
 
 	addressingTable[0x50] = &Relative;
 	addressingTable[0x51] = &IndirectY;
-	//addressingTable[0x55] = &EOR;
-	//addressingTable[0x56] = &LSR;
+	addressingTable[0x55] = &ZeroPageX;
+	addressingTable[0x56] = &ZeroPageX;
 	addressingTable[0x58] = &Implied;
 	addressingTable[0x59] = &AbsoluteY;
 	addressingTable[0x5D] = &AbsoluteX;
@@ -250,8 +261,8 @@ void CPU_Start()
 
 	addressingTable[0x70] = &Relative;
 	addressingTable[0x71] = &IndirectY;
-	//addressingTable[0x75] = &ADC;
-	//addressingTable[0x76] = &ROR;
+	addressingTable[0x75] = &ZeroPageX;
+	addressingTable[0x76] = &ZeroPageX;
 	addressingTable[0x78] = &Implied;
 	addressingTable[0x79] = &AbsoluteY;
 	addressingTable[0x7D] = &AbsoluteX;
@@ -269,9 +280,9 @@ void CPU_Start()
 
 	addressingTable[0x90] = &Relative;
 	addressingTable[0x91] = &IndirectY;
-	//addressingTable[0x94] = &STY;
-	//addressingTable[0x95] = &STA;
-	//addressingTable[0x96] = &STX;
+	addressingTable[0x94] = &ZeroPageX;
+	addressingTable[0x95] = &ZeroPageX;
+	addressingTable[0x96] = &ZeroPageY;
 	addressingTable[0x98] = &Implied;
 	addressingTable[0x99] = &AbsoluteY;
 	addressingTable[0x9A] = &Implied;
@@ -292,9 +303,9 @@ void CPU_Start()
 
 	addressingTable[0xB0] = &Relative;
 	addressingTable[0xB1] = &IndirectY;
-	//addressingTable[0xB4] = &LDY;
-	//addressingTable[0xB5] = &LDA;
-	//addressingTable[0xB6] = &LDX;
+	addressingTable[0xB4] = &ZeroPageX;
+	addressingTable[0xB5] = &ZeroPageX;
+	addressingTable[0xB6] = &ZeroPageY;
 	addressingTable[0xB8] = &Implied;
 	addressingTable[0xB9] = &AbsoluteY;
 	addressingTable[0xBA] = &Implied;
@@ -316,8 +327,8 @@ void CPU_Start()
 
 	addressingTable[0xD0] = &Relative;
 	addressingTable[0xD1] = &IndirectY;
-	//addressingTable[0xD5] = &CMP;
-	//addressingTable[0xD6] = &DEC;
+	addressingTable[0xD5] = &ZeroPageX;
+	addressingTable[0xD6] = &ZeroPageX;
 	addressingTable[0xD8] = &Implied;
 	addressingTable[0xD9] = &AbsoluteY;
 	addressingTable[0xDD] = &AbsoluteX;
@@ -337,141 +348,313 @@ void CPU_Start()
 
 	addressingTable[0xF0] = &Relative;
 	addressingTable[0xF1] = &IndirectY;
-	//addressingTable[0xF5] = &SBC;
-	//addressingTable[0xF6] = &INC;
+	addressingTable[0xF5] = &ZeroPageX;
+	addressingTable[0xF6] = &ZeroPageX;
 	addressingTable[0xF8] = &Implied;
 	addressingTable[0xF9] = &AbsoluteY;
 	addressingTable[0xFD] = &AbsoluteX;
 	addressingTable[0xFE] = &AbsoluteX;
 
 	//Init registers
-	processor.PC = 0x200;
+	processor.targetData = (uint8_t*)&processor.PC;
+	processor.PC = 0x400;
+	processor.SP = 0xFF;
 	processor.Flag = 0x00;
 	deviceState = 1;
 }
 
 void CPU_FDE()
 {
-	printf("PC: 0x%04X, Opcode: 0x%02X, ",processor.PC, memory[processor.PC]);
+	printf("PC: 0x%04X, Opcode: 0x%02X, Data: 0x%02X, Address: 0x%04X, A: 0x%02X, X: 0x%02X, Y: 0x%02X, SP: 0x%02X, FLAGS: "BIT_STRING"\n", processor.PC, memory[processor.PC], *processor.targetData, processor.address, processor.A, processor.X, processor.Y, processor.SP, BYTE_TO_BITS(processor.Flag));
 	processor.instructionWidth = 0;
+	
 	//Set memory addressing mode of opcode
 	processor.addressMode = addressingTable[memory[processor.PC]];
 	//Set instruction to be used by opcode
 	processor.opcode = instructionTable[memory[processor.PC]];
+
 	processor.PC += 1;
+	
 	if(processor.addressMode != NULL)
 		(processor.addressMode)();
 	if (processor.opcode != NULL)
 		(processor.opcode)();
-	printf("Data: 0x%02X, Address: 0x%04X | A: 0x%02X, X: 0x%02X, Y: 0x%02X, SP: 0x%02X\n",  *processor.targetData, processor.address, processor.A, processor.X, processor.Y, processor.SP);
+	
 }
 
 void LDA()
 {
 	processor.A = *processor.targetData;
+	SetBit7((processor.A & 0x80) >> 7);
+	if(processor.A == 0){
+		SetBit1(1);
+	}else{
+		SetBit1(0);
+	}
 }
 
 void LDX()
 {
 	processor.X = *processor.targetData;
+	SetBit7((processor.X & 0x80) >> 7);
+	if(processor.X == 0){
+		SetBit1(1);
+	}else{
+		SetBit1(0);
+	}
 }
 
 void LDY()
 {
 	processor.Y = *processor.targetData;
+	SetBit7((processor.Y & 0x80) >> 7);
+	if(processor.Y == 0){
+		SetBit1(1);
+	}else{
+		SetBit1(0);
+	}
 }
 
 void STA()
 {
-
+	memory[processor.address] = processor.A;
 }
 
 void STX()
 {
+	memory[processor.address] = processor.X;
 }
 
 void STY()
 {
+	memory[processor.address] = processor.Y;
 }
 
 void TAX()
 {
+	processor.X = processor.A;
+	SetBit7((processor.X & 0x80) >> 7);
+	if(processor.X == 0){
+		SetBit1(1);
+	}else{
+		SetBit1(0);
+	}
 }
 
 void TAY()
 {
+	processor.Y = processor.A;
+	SetBit7((processor.Y & 0x80) >> 7);
+	if(processor.Y == 0){
+		SetBit1(1);
+	}else{
+		SetBit1(0);
+	}
 }
 
 void TSX()
 {
+	processor.X = processor.SP;
+	SetBit7((processor.X & 0x80) >> 7);
+	if(processor.X == 0){
+		SetBit1(1);
+	}else{
+		SetBit1(0);
+	}
 }
 
 void TXA()
 {
+	processor.A = processor.X;
+	SetBit7((processor.A & 0x80) >> 7);
+	if(processor.A == 0){
+		SetBit1(1);
+	}else{
+		SetBit1(0);
+	}
 }
 
 void TXS()
 {
+	processor.SP = processor.X;
 }
 
 void TYA()
 {
+	processor.A = processor.Y;
+	SetBit7((processor.A & 0x80) >> 7);
+	if(processor.A == 0){
+		SetBit1(1);
+	}else{
+		SetBit1(0);
+	}
 }
 
 void PHA()
 {
+	memory[(uint16_t)processor.SP + 0x0100] = processor.A;
+	processor.SP--;
 }
 
 void PHP()
 {
+	memory[processor.SP + 0x0100] = processor.Flag | 0x30;
+	processor.SP--;
 }
 
 void PLA()
 {
+	processor.SP++;
+	processor.A = memory[processor.SP + 0x0100];
+	memory[processor.SP + 0x0100] = 0x00;
+	SetBit7((processor.A & 0x80) >> 7);
+	if(processor.A == 0){
+		SetBit1(1);
+	}else{
+		SetBit1(0);
+	}
 }
 
 void PLP()
 {
+	int tempFlag = processor.Flag;
+	processor.SP++;
+	processor.Flag = memory[processor.SP + 0x0100];
+	SetBit5((tempFlag & 0x20) >> 5);
+	SetBit4((tempFlag & 0x10) >> 4);
+	memory[processor.SP + 0x0100] = 0x00;
 }
 
 void DEC()
 {
+	memory[processor.address]--;
+	SetBit7((memory[processor.address] & 0x80) >> 7);
+	if(memory[processor.address] == 0){
+		SetBit1(1);
+	}else{
+		SetBit1(0);
+	}
 }
 
 void DEX()
 {
+	processor.X--;
+	SetBit7((processor.X & 0x80) >> 7);
+	if(processor.X == 0){
+		SetBit1(1);
+	}else{
+		SetBit1(0);
+	}
 }
 
 void DEY()
 {
+	processor.Y--;
+	SetBit7((processor.Y & 0x80) >> 7);
+	if(processor.Y == 0){
+		SetBit1(1);
+	}else{
+		SetBit1(0);
+	}
 }
 
 void INC()
 {
+	memory[processor.address]++;
+	SetBit7((memory[processor.address] & 0x80) >> 7);
+	if(memory[processor.address] == 0){
+		SetBit1(1);
+	}else{
+		SetBit1(0);
+	}
 }
 
 void INX()
 {
+	processor.X++;
+	SetBit7((processor.X & 0x80) >> 7);
+	if(processor.X == 0){
+		SetBit1(1);
+	}else{
+		SetBit1(0);
+	}
 }
 
 void INY()
 {
+	processor.Y++;
+	SetBit7((processor.Y & 0x80) >> 7);
+	if(processor.Y == 0){
+		SetBit1(1);
+	}else{
+		SetBit1(0);
+	}
 }
 
 void ADC()
 {
+	processor.A = processor.A + *processor.targetData + (processor.Flag & 0x01);
+	if((uint16_t )processor.A + *processor.targetData + (processor.Flag & 0x01) > 255){
+		SetBit0(1);
+	}else{
+		SetBit0(0);
+	}
+	SetBit7((processor.A & 0x80) >> 7);
+	if(processor.A == 0){
+		SetBit1(1);
+	}else{
+		SetBit1(0);
+	}
+	if((int16_t )processor.A + *processor.targetData + (processor.Flag & 0x01) < -128 || (int16_t )processor.A + *processor.targetData + (processor.Flag & 0x01) > 127){
+		SetBit6(1);
+	}else{
+		SetBit6(0);
+	}
+		
 }
 
 void SBC()
 {
+	processor.A = processor.A - *processor.targetData - (processor.Flag & 0x01);
+	if((int16_t) processor.A - *processor.targetData - (processor.Flag & 0x01) < 0){
+		SetBit0(1);
+	}else{
+		SetBit0(0);
+	}
+	SetBit7((processor.A & 0x80) >> 7);
+	if(processor.A == 0){
+		SetBit1(1);
+	}else{
+		SetBit1(0);
+	}
+	if((int16_t )processor.A - *processor.targetData - (processor.Flag & 0x01) < -128 || (int16_t )processor.A - *processor.targetData - (processor.Flag & 0x01) > 127){
+		SetBit6(1);
+	}else{
+		SetBit6(0);
+	}
+		
 }
 
 void AND()
 {
+	processor.A = processor.A & *processor.targetData;
+	SetBit7((processor.A & 0x80) >> 7);
+	if(processor.A == 0){
+		SetBit1(1);
+	}else{
+		SetBit1(0);
+	}
 }
 
 void EOR()
 {
+	processor.A = (processor.A | *processor.targetData) - (processor.A & *processor.targetData);
+	SetBit7((processor.A & 0x80) >> 7);
+	if(processor.A == 0){
+		SetBit1(1);
+	}else{
+		SetBit1(0);
+	}
 }
 
 void ORA()
@@ -568,6 +751,7 @@ void BVS()
 
 void JMP()
 {
+	processor.PC = processor.address;
 }
 
 void JSR()
@@ -627,7 +811,7 @@ void Indirect(){
 	processor.address = memory[tempAddress + 1];
 	processor.address << 8;
 	processor.address += memory[tempAddress];
-	processor.targetData = 0;
+	processor.targetData = &memory[processor.address];
 	processor.PC += 2;
 }
 
@@ -651,6 +835,8 @@ void AbsoluteX(){
 	processor.address += memory[processor.PC];
 	processor.address += processor.X;
 
+	processor.targetData = &memory[processor.address];
+
 	processor.PC += 2;
 }
 
@@ -660,6 +846,8 @@ void AbsoluteY(){
 	processor.address = processor.address << 8;
 	processor.address += memory[processor.PC];
 	processor.address += processor.Y;
+
+	processor.targetData = &memory[processor.address];
 
 	processor.PC += 2;
 }
@@ -673,7 +861,7 @@ void IndirectX(){
 	processor.address << 8;
 	processor.address += memory[tempAddress];
 
-	processor.targetData = 0;
+	processor.targetData = &memory[processor.address];
 	processor.PC += 1;
 }
 
@@ -686,7 +874,7 @@ void IndirectY(){
 	processor.address += memory[tempAddress];
 	processor.address += processor.Y;
 
-	processor.targetData = 0;
+	processor.targetData = &memory[processor.address];
 	processor.PC += 1;
 }
 
@@ -698,6 +886,7 @@ void ZeroPageX(){
 	processor.instructionWidth = 1;
 	processor.address = memory[processor.PC];
 	processor.address += processor.X;
+	processor.targetData = &memory[processor.address];
 	processor.PC += 1;
 }
 
@@ -705,6 +894,7 @@ void ZeroPageY(){
 	processor.instructionWidth = 1;
 	processor.address = memory[processor.PC];
 	processor.address += processor.Y;
+	processor.targetData = &memory[processor.address];
 	processor.PC += 1;
 }
 

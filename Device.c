@@ -12,7 +12,7 @@ void EmulationLoop() {
 }
 
 void LoadProgram() {
-	FILE* program_p = fopen("Programs/test.bin", "rb");
-	fread(&memory[0x200], sizeof(memory), 1, program_p);
+	FILE* program_p = fopen("Programs/6502_opcode_test.bin", "rb");
+	fread(&memory[0x00], sizeof(memory), 1, program_p);
 	fclose(program_p);
 }

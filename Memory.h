@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#define MAX_MEMORY 4096
+#define MAX_MEMORY 65536
 
 extern uint8_t memory[MAX_MEMORY];
 

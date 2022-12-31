@@ -7,7 +7,7 @@ OBJ = Main.o CPU.o Device.o Memory.o
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
       
-hellomake1: $(OBJ)
+6502: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 clean:
