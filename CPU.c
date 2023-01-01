@@ -648,7 +648,7 @@ void AND()
 
 void EOR()
 {
-	processor.A = (processor.A | *processor.targetData) - (processor.A & *processor.targetData);
+	processor.A = processor.A ^ *processor.targetData;
 	SetBit7((processor.A & 0x80) >> 7);
 	if(processor.A == 0){
 		SetBit1(1);
@@ -659,22 +659,65 @@ void EOR()
 
 void ORA()
 {
+	processor.A = processor.A | *processor.targetData;
+	SetBit7((processor.A & 0x80) >> 7);
+	if(processor.A == 0){
+		SetBit1(1);
+	}else{
+		SetBit1(0);
+	}
 }
 
 void ASL()
 {
+	SetBit0((*processor.targetData & 0x80) >> 7);
+	*processor.targetData = *processor.targetData << 1;
+	SetBit7((*processor.targetData & 0x80) >> 7);
+	if(*processor.targetData == 0){
+		SetBit1(1);
+	}else{
+		SetBit1(0);
+	}
 }
 
 void LSR()
 {
+	SetBit0((*processor.targetData & 0x01));
+	*processor.targetData = *processor.targetData >> 1;
+	SetBit7(0);
+	if(*processor.targetData == 0){
+		SetBit1(1);
+	}else{
+		SetBit1(0);
+	}
 }
 
 void ROL()
 {
+	uint8_t shiftInBit = processor.Flag & 0x01;
+	SetBit0((*processor.targetData & 0x80) >> 7);
+	*processor.targetData << 1;
+	*processor.targetData = *processor.targetData | shiftInBit;
+	SetBit7((*processor.targetData & 0x80) >> 7);
+	if(*processor.targetData == 0){
+		SetBit1(1);
+	}else{
+		SetBit1(0);
+	}
 }
 
 void ROR()
 {
+	uint8_t shiftInBit = (processor.Flag & 0x01) << 7;
+	SetBit0((*processor.targetData & 0x01));
+	*processor.targetData >> 1;
+	*processor.targetData = *processor.targetData | shiftInBit;
+	SetBit7((*processor.targetData & 0x80) >> 7);
+	if(*processor.targetData == 0){
+		SetBit1(1);
+	}else{
+		SetBit0(0);
+	}
 }
 
 void CLC()
