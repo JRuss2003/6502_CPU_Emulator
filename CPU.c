@@ -359,7 +359,7 @@ void CPU_Start()
 	processor.targetData = (uint8_t*)&processor.PC;
 	processor.PC = 0x400;
 	processor.SP = 0xFF;
-	processor.Flag = 0x00;
+	processor.Flag = 54;
 	deviceState = 1;
 }
 
@@ -593,46 +593,45 @@ void INY()
 
 void ADC()
 {
-	processor.A = processor.A + *processor.targetData + (processor.Flag & 0x01);
 	if((uint16_t )processor.A + *processor.targetData + (processor.Flag & 0x01) > 255){
 		SetBit0(1);
 	}else{
 		SetBit0(0);
 	}
+	if((int16_t)(int8_t)processor.A + *processor.targetData + (processor.Flag & 0x01) < -128 || (int16_t)(int8_t)processor.A + *processor.targetData + (processor.Flag & 0x01) > 127){
+		SetBit6(1);
+	}else{
+		SetBit6(0);
+	}
+	processor.A = processor.A + *processor.targetData + (processor.Flag & 0x01);
 	SetBit7((processor.A & 0x80) >> 7);
 	if(processor.A == 0){
 		SetBit1(1);
 	}else{
 		SetBit1(0);
-	}
-	if((int16_t )processor.A + *processor.targetData + (processor.Flag & 0x01) < -128 || (int16_t )processor.A + *processor.targetData + (processor.Flag & 0x01) > 127){
-		SetBit6(1);
-	}else{
-		SetBit6(0);
 	}
 		
 }
 
 void SBC()
 {
-	processor.A = processor.A - *processor.targetData - (processor.Flag & 0x01);
-	if((int16_t) processor.A - *processor.targetData - (processor.Flag & 0x01) < 0){
+	if((int16_t)(int8_t)processor.A - *processor.targetData - (processor.Flag & 0x01) < 0){
 		SetBit0(1);
 	}else{
 		SetBit0(0);
 	}
+	if((int16_t )(int8_t)processor.A - *processor.targetData - (processor.Flag & 0x01) < -128 || (int16_t )(int8_t)processor.A - *processor.targetData - (processor.Flag & 0x01) > 127){
+		SetBit6(1);
+	}else{
+		SetBit6(0);
+	}
+	processor.A = processor.A - *processor.targetData - (processor.Flag & 0x01);	
 	SetBit7((processor.A & 0x80) >> 7);
 	if(processor.A == 0){
 		SetBit1(1);
 	}else{
 		SetBit1(0);
 	}
-	if((int16_t )processor.A - *processor.targetData - (processor.Flag & 0x01) < -128 || (int16_t )processor.A - *processor.targetData - (processor.Flag & 0x01) > 127){
-		SetBit6(1);
-	}else{
-		SetBit6(0);
-	}
-		
 }
 
 void AND()
@@ -722,74 +721,141 @@ void ROR()
 
 void CLC()
 {
+	SetBit0(0);
 }
 
 void CLD()
 {
+	SetBit3(0);
 }
 
 void CLI()
 {
+	SetBit2(0);
 }
 
 void CLV()
 {
+	SetBit6(0);
 }
 
 void SEC()
 {
+	SetBit0(1);
 }
 
 void SED()
 {
+	SetBit3(1);
 }
 
 void SEI()
 {
+	SetBit2(1);
 }
 
 void CMP()
 {
+	uint8_t result = processor.A - *processor.targetData;
+	SetBit7((result & 0x80) >> 7);
+	if(result == 0){
+		SetBit1(1);
+	}else{
+		SetBit1(0);
+	}
+	if((int16_t)processor.A - *processor.targetData < 0){
+		SetBit0(1);
+	}else{
+		SetBit0(0);
+	}
 }
 
 void CPX()
 {
+	uint8_t result = processor.X - *processor.targetData;
+	SetBit7((result & 0x80) >> 7);
+	if(result == 0){
+		SetBit1(1);
+	}else{
+		SetBit1(0);
+	}
+	if((int16_t)processor.X - *processor.targetData < 0){
+		SetBit0(1);
+	}else{
+		SetBit0(0);
+	}
 }
 
 void CPY()
 {
+	uint8_t result = processor.Y - *processor.targetData;
+	SetBit7((result & 0x80) >> 7);
+	if(result == 0){
+		SetBit1(1);
+	}else{
+		SetBit1(0);
+	}
+	if((int16_t)processor.Y - *processor.targetData < 0){
+		SetBit0(1);
+	}else{
+		SetBit0(0);
+	}
 }
 
 void BCC()
 {
+	if(processor.Flag & 0x01 == 0){
+		processor.PC += (int16_t)(int8_t)*processor.targetData;
+	}
 }
 
 void BCS()
 {
+	if(processor.Flag & 0x01 == 1){
+		processor.PC += (int16_t)(int8_t)*processor.targetData;
+	}
 }
 
 void BEQ()
 {
+	if((processor.Flag & 0x02) >> 1 == 1){
+		processor.PC += (int16_t)(int8_t)*processor.targetData;
+	}
 }
 
 void BMI()
 {
+	if((processor.Flag & 0x80) >> 7 == 1){
+		processor.PC += (int16_t)(int8_t)*processor.targetData;
+	}
 }
 
 void BNE()
 {
+	if((processor.Flag & 0x02) >> 1 == 0){
+		processor.PC += (int16_t)(int8_t)*processor.targetData;
+	}
 }
 
 void BPL()
 {
+	if((processor.Flag & 0x80) >> 7 == 0){
+		processor.PC += (int16_t)(int8_t)*processor.targetData;
+	}
 }
 
 void BVC()
 {
+	if((processor.Flag & 0x40) >> 6 == 0){
+		processor.PC += (int16_t)(int8_t)*processor.targetData;
+	}
 }
 
 void BVS()
 {
+	if((processor.Flag & 0x40) >> 6 == 1){
+		processor.PC += (int16_t)(int8_t)*processor.targetData;
+	}
 }
 
 void JMP()
@@ -799,10 +865,23 @@ void JMP()
 
 void JSR()
 {
+	uint8_t lowByte = processor.PC & 0x000000FF;
+	uint8_t highByte = (processor.PC & 0x0000FF00) >> 8;
+	memory[(uint16_t)processor.SP + 0x100] = highByte;
+	processor.SP--;
+	memory[(uint16_t)processor.SP + 0x100] = lowByte;
+	processor.SP--;
+	processor.PC = processor.address;
 }
 
 void RTS()
 {
+	
+	uint16_t tempAddress = memory[(uint16_t)processor.SP + 2 + 0x100] << 8;
+	memory[(uint16_t)processor.SP + 2 + 0x100] = 0;
+	tempAddress += memory[(uint16_t)processor.SP + 1 + 0x100];
+	memory[(uint16_t)processor.SP + 1 + 0x100] = 0;
+	processor.SP += 2;
 }
 
 void BRK()
